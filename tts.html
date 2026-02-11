@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bibliothèque de Dépannage IT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --n1-color: #22c55e;   /* Neon green */
+      --n2-color: #eab308;   /* Neon yellow */
+      --admin-color: #f97316;/* Neon orange */
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1e293b 0, #020617 45%, #000 100%);
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .glass {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      box-shadow:
+        0 0 20px rgba(59, 130, 246, 0.25),
+        0 0 40px rgba(236, 72, 153, 0.2);
+    }
+
+    .pill-active {
+      border-color: rgba(248, 250, 252, 0.9);
+      box-shadow: 0 0 12px rgba(248, 250, 252, 0.7);
+    }
+
+    .neon-border {
+      box-shadow:
+        0 0 10px rgba(56, 189, 248, 0.7),
+        0 0 25px rgba(236, 72, 153, 0.5);
+    }
+
+    .card-hover {
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-3px) scale(1.01);
+      border-color: rgba(59, 130, 246, 0.7);
+      box-shadow:
+        0 0 12px rgba(59, 130, 246, 0.6),
+        0 0 26px rgba(236, 72, 153, 0.5);
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background-color: rgba(148, 163, 184, 0.7);
+      border-radius: 9999px;
+    }
+
+    .badge-n1 {
+      color: #022c22;
+      background: radial-gradient(circle at top left, #bbf7d0, #22c55e);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
+    }
+
+    .badge-n2 {
+      color: #422006;
+      background: radial-gradient(circle at top left, #fef9c3, #eab308);
+      box-shadow: 0 0 12px rgba(234, 179, 8, 0.9);
+    }
+
+    .badge-admin {
+      color: #431407;
+      background: radial-gradient(circle at top left, #fed7aa, #f97316);
+      box-shadow: 0 0 12px rgba(249, 115, 22, 0.9);
+    }
+
+    .category-chip {
+      border-radius: 9999px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .glow-text {
+      text-shadow:
+        0 0 6px rgba(94, 234, 212, 0.9),
+        0 0 18px rgba(129, 140, 248, 0.8);
+    }
+
+    .input-focus:focus {
+      outline: none;
+      box-shadow:
+        0 0 0 1px rgba(248, 250, 252, 0.9),
+        0 0 15px rgba(59, 130, 246, 0.9);
+    }
+
+    .transition-fast {
+      transition: all 0.15s ease-out;
+    }
+
+    .rotate-icon {
+      transition: transform 0.15s ease-out;
+    }
+
+    .details-open .rotate-icon {
+      transform: rotate(90deg);
+    }
+	@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  header,
+  #addIncidentForm,
+  #searchInput,
+  #categoryFilters,
+  #levelFilters,
+  #resetBtn,
+  #exportBtn,
+  #importInput,
+  #printAllBtn,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  #cardsContainer {
+    display: block;
+  }
+
+  .glass,
+  .card-hover {
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: 1px solid #999999 !important;
+    color: #000000 !important;
+  }
+
+  .badge-n1,
+  .badge-n2,
+  .badge-admin,
+  .category-chip {
+    background: #dddddd !important;
+    color: #000000 !important;
+    border-color: #bbbbbb !important;
+    box-shadow: none !important;
+  }
+
+  article {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 16px;
+  }
+
+  article + article {
+    page-break-before: always;
+  }
+}
+
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="min-h-screen px-4 py-6 sm:px-8 sm:py-8 lg:px-16 lg:py-10">
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-sky-100 glow-text">
+            TOTAL TROUBLE <span class="text-pink-400">SHOOTING</span>
+          </h1>
+          <p class="mt-2 text-sm sm:text-base text-slate-300">
+            Bibliothèque centralisée de dépannage IT pour l'écosystème Microsoft 365.
+          </p>
+        </div>
+        <button
+          id="aiSuggestionBtn"
+          class="inline-flex items-center justify-center px-4 py-2 rounded-xl glass neon-border text-sm font-semibold text-sky-50 hover:bg-sky-900/60 transition-fast"
+        >
+          <span class="mr-2 text-lg">✨</span>
+          <span>Suggestion IA</span>
+        </button>
+      </div>
+	  
+	  <div class="flex gap-2">
+  <button id="exportBtn"
+    class="px-3 py-2 rounded-xl glass text-xs font-semibold text-sky-100">
+    Export JSON
+  </button>
+  <label
+    class="px-3 py-2 rounded-xl glass text-xs font-semibold text-pink-200 cursor-pointer">
+    Import JSON
+    <input id="importInput" type="file" accept="application/json" class="hidden" />
+  </label>
+  <button id="printAllBtn"
+    class="px-3 py-2 rounded-xl glass text-xs font-semibold text-slate-100 border border-slate-500/60">
+    Imprimer tout
+  </button>
+  <button id="resetBtn"
+    class="px-3 py-2 rounded-xl glass text-xs font-semibold text-red-200 border border-red-500/60">
+    Réinitialiser la bibliothèque
+  </button>
+</div>
+
+
+    </header>
+
+    <!-- Search & Filters -->
+    <section class="max-w-7xl mx-auto mb-6 sm:mb-8 glass rounded-2xl p-4 sm:p-5">
+      <!-- Search -->
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex-1 w-full">
+          <label for="searchInput" class="block text-xs font-semibold tracking-wide text-slate-400 uppercase mb-1">
+            Recherche globale
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              🔍
+            </span>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Rechercher dans le titre, le problème, la root cause, la solution..."
+              class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/70 border border-slate-600/70 text-sm text-slate-100 placeholder:text-slate-500 input-focus"
+            />
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span id="countVisible" class="font-semibold text-sky-300"></span>
+          <span class="hidden xs:inline">fiches visibles</span>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Category filters -->
+        <div>
+          <p class="text-xs font-semibold tracking-wide text-slate-400 uppercase mb-2">
+            Catégories
+          </p>
+          <div id="categoryFilters" class="flex flex-wrap gap-2">
+            <!-- Pills generated by JS -->
+          </div>
+        </div>
+        <!-- Level filters -->
+        <div>
+          <p class="text-xs font-semibold tracking-wide text-slate-400 uppercase mb-2">
+            Niveaux d'accréditation
+          </p>
+          <div id="levelFilters" class="flex flex-wrap gap-2">
+            <!-- Pills generated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7 items-start">
+      <!-- Cards -->
+      <section class="lg:col-span-2">
+        <div
+  id="cardsContainer"
+  class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 items-start"
+>
+
+          <!-- Cards injected by JS -->
+        </div>
+        <p
+          id="noResults"
+          class="hidden mt-4 text-center text-sm text-slate-400"
+        >
+          Aucune fiche ne correspond aux filtres/recherches actuels.
+        </p>
+      </section>
+<div id="toast"
+     class="fixed top-4 right-4 z-50 px-3 py-2 rounded-lg text-xs sm:text-sm
+            bg-emerald-600/90 text-white shadow-lg hidden">
+</div>
+
+      <!-- Form -->
+      <aside class="glass rounded-2xl p-4 sm:p-5 lg:sticky lg:top-6 max-h-[80vh] overflow-y-auto scrollbar-thin">
+        <h2 class="text-lg font-semibold mb-3 text-sky-100">
+          Ajouter une nouvelle panne
+        </h2>
+        <p class="text-xs text-slate-400 mb-4">
+          Complète le formulaire pour enrichir la bibliothèque avec tes propres cas de dépannage.
+        </p>
+        <form id="addIncidentForm" class="space-y-3 text-sm">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Titre</label>
+            <input
+              type="text"
+              name="title"
+              required
+              class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+              placeholder="Ex : BSOD au démarrage sur Windows 11"
+            />
+          </div>
+<div>
+  <label class="block text-xs font-semibold text-slate-300 mb-1">
+    Auteur / Technicien (optionnel)
+  </label>
+  <input
+    type="text"
+    name="author"
+    class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+    placeholder="Ex : J. Martin"
+  />
+</div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Catégorie</label>
+<input
+  type="text"
+  name="category"
+  required
+  list="categoryList"
+  class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 input-focus"
+  placeholder="Ex : Windows, Poste de travail, VPN..."
+/>
+<datalist id="categoryList">
+  <option value="Windows"></option>
+  <option value="Poste de travail"></option>
+  <option value="Mac"></option>
+  <option value="Android"></option>
+  <option value="iOS"></option>
+  <option value="Imprimantes / Copieurs"></option>
+  <option value="Meeting room"></option>
+  <option value="Outlook"></option>
+  <option value="SharePoint"></option>
+  <option value="Teams"></option>
+  <option value="OneDrive"></option>
+  <option value="VPN"></option>
+  <option value="Azure"></option>
+  <option value="Exchange"></option>
+</datalist>
+
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Niveau</label>
+            <select
+              name="level"
+              required
+              class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 input-focus"
+            >
+              <option value="">Sélectionner...</option>
+              <option>N1</option>
+              <option>N2</option>
+              <option>Admin</option>
+            </select>
+          </div>
+
+          <div>
+		  <div>
+  <label class="block text-xs font-semibold text-slate-300 mb-1">
+    URL / chemin de l'image (optionnel)
+  </label>
+  <input
+    type="text"
+    name="image"
+    class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+    placeholder="Ex : images/bsod.png ou https://..."
+  />
+</div>
+<div>
+  <label class="block text-xs font-semibold text-slate-300 mb-1">
+    Tags (séparés par des virgules)
+  </label>
+  <input
+    type="text"
+    name="tags"
+    class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+    placeholder="Ex : réseau, VPN, performance..."
+  />
+</div>
+
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Problème (symptômes)</label>
+            <textarea
+              name="problem"
+              required
+              rows="2"
+              class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+              placeholder="Description synthétique des symptômes observés..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Root Cause</label>
+            <textarea
+              name="rootCause"
+              required
+              rows="2"
+              class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+              placeholder="Origine technique identifiée / probable..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Solution de contournement</label>
+            <textarea
+              name="workaround"
+              required
+              rows="2"
+              class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+              placeholder="Action rapide à appliquer pour débloquer l'utilisateur..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Solution définitive</label>
+            <textarea
+              name="solution"
+              required
+              rows="2"
+              class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+              placeholder="Résolution pérenne à mettre en place (corriger la cause)..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Fiche de dépannage (étapes)</label>
+            <textarea
+              name="steps"
+              required
+              rows="3"
+              class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 placeholder:text-slate-500 input-focus"
+              placeholder="Guide étape par étape, 1 action par ligne..."
+            ></textarea>
+          </div>
+
+          <div class="mt-2 flex flex-col sm:flex-row gap-2">
+  <button
+    id="submitIncidentBtn"
+    type="submit"
+    class="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-pink-500 text-slate-950 font-semibold hover:from-sky-400 hover:to-pink-400 transition-fast"
+  >
+    Ajouter la fiche
+  </button>
+  <button
+    id="cancelEditBtn"
+    type="button"
+    class="hidden w-full sm:w-auto px-3 py-2 rounded-xl border border-slate-500/70 text-xs font-semibold text-slate-200 bg-slate-900/70 hover:bg-slate-800/80 transition-fast"
+  >
+    ❌ Annuler
+  </button>
+</div>
+
+   </form>
+   </aside>
+   </main>
+   
+<script>
+// -----------------------------
+// Données initiales (JSON)
+// -----------------------------
+
+const STORAGE_KEY = "tt_incidents_v1";
+
+const incidents = [];
+const aiSuggestionsPool = [];
+
+let nextId = incidents.length + 1;
+
+// -----------------------------
+// Persistance localStorage
+// -----------------------------
+function saveIncidentsToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(incidents));
+  } catch (e) {
+    console.warn("Impossible de sauvegarder dans localStorage", e);
+  }
+}
+
+function loadIncidentsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      incidents.length = 0;
+      parsed.forEach(i => incidents.push(i));
+      nextId = incidents.reduce((max, i) => Math.max(max, i.id || 0), 0) + 1;
+    }
+  } catch (e) {
+    console.warn("Données locales corrompues, on repart sur la version embarquée.", e);
+  }
+}
+function showToast(message, type = "success") {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.textContent = message;
+
+  // couleur selon le type
+  if (type === "success") {
+    toast.className = "fixed top-4 right-4 z-50 px-3 py-2 rounded-lg text-xs sm:text-sm bg-emerald-600/90 text-white shadow-lg";
+  } else if (type === "error") {
+    toast.className = "fixed top-4 right-4 z-50 px-3 py-2 rounded-lg text-xs sm:text-sm bg-red-600/90 text-white shadow-lg";
+  } else {
+    toast.className = "fixed top-4 right-4 z-50 px-3 py-2 rounded-lg text-xs sm:text-sm bg-slate-700/90 text-white shadow-lg";
+  }
+
+  toast.classList.remove("hidden");
+
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 2500);
+}
+
+// -----------------------------
+// Helpers UI
+// -----------------------------
+const categoryOptions = [
+  "Windows",
+  "Poste de travail",
+  "Mac",
+  "Android",
+  "iOS",
+  "Imprimantes / Copieurs",
+  "Meeting room",
+  "Outlook",
+  "SharePoint",
+  "Teams",
+  "OneDrive",
+  "VPN",
+  "Azure",
+  "Exchange"
+];
+
+const levelOptions = ["N1", "N2", "Admin"];
+
+const state = {
+  search: "",
+  category: "ALL",
+  level: "ALL",
+  favoritesOnly: false
+};
+let editingIncidentId = null;
+
+function getIncidentById(id) {
+  return incidents.find(inc => inc.id === id);
+}
+
+function deleteIncidentById(id) {
+  const idx = incidents.findIndex(inc => inc.id === id);
+  if (idx !== -1) {
+    incidents.splice(idx, 1);
+  }
+}
+
+const cardsContainer = document.getElementById("cardsContainer");
+const noResults = document.getElementById("noResults");
+const countVisible = document.getElementById("countVisible");
+
+function getLevelBadgeClass(level) {
+  if (level === "N1") return "badge-n1";
+  if (level === "N2") return "badge-n2";
+  return "badge-admin";
+}
+
+function getLevelLabel(level) {
+  if (level === "N1") return "N1 - Frontline";
+  if (level === "N2") return "N2 - Expert";
+  return "Admin - Global";
+}
+
+function createPill(label, value, type) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.value = value;
+  button.dataset.type = type;
+  button.className =
+    "px-3 py-1 rounded-full text-xs font-semibold border border-slate-500/70 bg-slate-900/70 text-slate-200 hover:bg-slate-800/80 transition-fast";
+  button.textContent = label;
+  return button;
+}
+
+function renderFilters() {
+  const categoryFilters = document.getElementById("categoryFilters");
+  const levelFilters = document.getElementById("levelFilters");
+
+  categoryFilters.innerHTML = "";
+  levelFilters.innerHTML = "";
+
+  const allCat = createPill("Toutes", "ALL", "category");
+  allCat.classList.add("pill-active");
+  categoryFilters.appendChild(allCat);
+
+  categoryOptions.forEach(cat => {
+    categoryFilters.appendChild(createPill(cat, cat, "category"));
+  });
+
+  const allLevel = createPill("Tous", "ALL", "level");
+  allLevel.classList.add("pill-active");
+  levelFilters.appendChild(allLevel);
+
+  levelOptions.forEach(lvl => {
+    levelFilters.appendChild(createPill(lvl, lvl, "level"));
+  });
+
+// Bouton favoris seulement
+const favToggle = document.createElement("button");
+favToggle.type = "button";
+favToggle.className =
+  "mt-2 px-3 py-1 rounded-full text-xs font-semibold border border-slate-500/70 bg-slate-900/70 text-yellow-300 hover:bg-slate-800/80 transition-fast";
+favToggle.textContent = "⭐ Favoris seulement";
+
+// on applique la classe en fonction de l'état actuel
+if (state.favoritesOnly) {
+  favToggle.classList.add("pill-active");
+}
+
+favToggle.addEventListener("click", () => {
+  state.favoritesOnly = !state.favoritesOnly;
+  favToggle.classList.toggle("pill-active", state.favoritesOnly);
+  renderCards();
+});
+
+  levelFilters.parentElement.appendChild(favToggle);
+
+  categoryFilters.addEventListener("click", onFilterClick);
+  levelFilters.addEventListener("click", onFilterClick);
+}
+
+function onFilterClick(e) {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const { value, type } = btn.dataset;
+  if (!value || !type) return;
+
+  if (type === "category") {
+    state.category = value;
+    const siblings = btn.parentElement.querySelectorAll("button");
+    siblings.forEach(b => b.classList.remove("pill-active"));
+    btn.classList.add("pill-active");
+  } else if (type === "level") {
+    state.level = value;
+    const siblings = btn.parentElement.querySelectorAll("button");
+    siblings.forEach(b => b.classList.remove("pill-active"));
+    btn.classList.add("pill-active");
+  }
+  renderCards();
+}
+
+function matchesSearch(incident, term) {
+  if (!term) return true;
+  const t = term.toLowerCase();
+  const fields = [
+    incident.title,
+    incident.category,
+    incident.level,
+    incident.author || "",
+    incident.problem,
+    incident.rootCause,
+    incident.workaround,
+    incident.solution,
+    (incident.steps || []).join(" "),
+    (incident.tags || []).join(" "),
+    incident.image || "",
+    incident.createdAt || "",
+    incident.updatedAt || ""
+  ];
+  const text = fields.join(" ").toLowerCase();
+  return text.includes(t);
+}
+
+
+function matchesFilters(incident) {
+  const catOk = state.category === "ALL" || incident.category === state.category;
+  const lvlOk = state.level === "ALL" || incident.level === state.level;
+  const favOk = !state.favoritesOnly || incident.favorite;
+  return catOk && lvlOk && favOk;
+}
+
+function scoreIncidentAgainstSearch(incident, term) {
+  if (!term) return 0;
+  const t = term.toLowerCase();
+  let score = 0;
+
+  const title = (incident.title || "").toLowerCase();
+  const problem = (incident.problem || "").toLowerCase();
+  const tags = (incident.tags || []).join(" ").toLowerCase();
+
+  if (title.includes(t)) score += 3;
+  if (problem.includes(t)) score += 2;
+  if (tags.includes(t)) score += 1;
+
+  return score;
+}
+
+function suggestFromPool() {
+  const term = state.search || "";
+
+  // On filtre le pool avec les mêmes règles que les cartes
+  const poolCandidates = aiSuggestionsPool.filter(inc =>
+    matchesFilters(inc) && matchesSearch(inc, term)
+  );
+
+  if (poolCandidates.length === 0) {
+    return null;
+  }
+
+  // Sans terme de recherche : suggestion aléatoire parmi les candidats filtrés
+  if (!term) {
+    return poolCandidates[Math.floor(Math.random() * poolCandidates.length)];
+  }
+
+  // Avec recherche : on cherche le meilleur score
+  let best = null;
+  let bestScore = 0;
+  for (const inc of poolCandidates) {
+    const s = scoreIncidentAgainstSearch(inc, term);
+    if (s > bestScore) {
+      bestScore = s;
+      best = inc;
+    }
+  }
+  return best || poolCandidates[0];
+}
+
+// Crochet pour l’IA externe (à brancher plus tard sur un backend)
+async function handleExternalAISuggestion() {
+  const term = state.search || "";
+  if (!term) {
+    showToast("Aucun terme de recherche pour interroger l'IA externe.", "error");
+    return;
+  }
+
+  // Pour l’instant : simple placeholder
+  alert(
+    "Aucune fiche interne ou du pool ne correspond.\n\n" +
+    "Ici, on pourra appeler une IA externe (API) pour générer une fiche au bon format."
+  );
+}
+
+
+function renderCards() {
+  cardsContainer.innerHTML = "";
+
+  const filtered = incidents.filter(
+    inc => matchesFilters(inc) && matchesSearch(inc, state.search)
+  );
+
+  countVisible.textContent = filtered.length.toString();
+
+  if (filtered.length === 0) {
+    noResults.classList.remove("hidden");
+    return;
+  } else {
+    noResults.classList.add("hidden");
+  }
+
+  filtered.forEach(incident => {
+    const card = document.createElement("article");
+    card.className =
+      "glass rounded-2xl border border-slate-700/80 p-3 sm:p-4 flex flex-col gap-2 card-hover transition-fast";
+    card.dataset.id = incident.id;
+
+    const header = document.createElement("div");
+header.className = "flex items-start justify-between gap-2";
+
+const titleBox = document.createElement("div");
+titleBox.className = "max-w-[45%]";
+
+const titleEl = document.createElement("h3");
+titleEl.className =
+  "text-sm sm:text-base font-semibold text-sky-100 break-words";
+titleEl.className = "text-sm sm:text-base font-semibold text-sky-100";
+titleEl.textContent = incident.title;
+
+const metaRow = document.createElement("div");
+metaRow.className = "mt-1 flex flex-wrap items-center gap-2";
+
+const catSpan = document.createElement("span");
+catSpan.className =
+  "category-chip bg-slate-800/80 text-sky-300 border border-sky-500/70";
+catSpan.textContent = incident.category;
+
+const lvlSpan = document.createElement("span");
+lvlSpan.className =
+  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.65rem] uppercase tracking-wide " +
+  getLevelBadgeClass(incident.level);
+lvlSpan.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900/80"></span><span>${incident.level}</span>`;
+
+metaRow.appendChild(catSpan);
+metaRow.appendChild(lvlSpan);
+titleBox.appendChild(titleEl);
+titleBox.appendChild(metaRow);
+
+// auteur + dates
+const infoRow = document.createElement("div");
+infoRow.className = "mt-1 flex flex-wrap items-center gap-2 text-[0.7rem] text-slate-400";
+
+if (incident.author) {
+  const authorEl = document.createElement("span");
+  authorEl.textContent = `Auteur : ${incident.author}`;
+  infoRow.appendChild(authorEl);
+}
+if (incident.createdAt) {
+  const createdEl = document.createElement("span");
+  const createdDate = new Date(incident.createdAt);
+  createdEl.textContent = `Créée le : ${createdDate.toLocaleDateString()}`;
+  infoRow.appendChild(createdEl);
+}
+if (incident.updatedAt && incident.updatedAt !== incident.createdAt) {
+  const updatedEl = document.createElement("span");
+  const updatedDate = new Date(incident.updatedAt);
+  updatedEl.textContent = `Modifiée le : ${updatedDate.toLocaleDateString()}`;
+  infoRow.appendChild(updatedEl);
+}
+if (infoRow.childElementCount > 0) {
+  titleBox.appendChild(infoRow);
+}
+
+// bouton détails
+const toggleBtn = document.createElement("button");
+toggleBtn.type = "button";
+toggleBtn.className =
+  "inline-flex items-center text-[0.7rem] uppercase tracking-wide text-slate-300 bg-slate-900/60 border border-slate-500/80 rounded-full px-2 py-1 hover:bg-slate-800/80 transition-fast";
+toggleBtn.innerHTML =
+  '<span class="mr-1 rotate-icon">▶</span><span>Détails</span>';
+
+// actions à droite
+const actions = document.createElement("div");
+actions.className =
+  "flex flex-wrap items-center gap-1 justify-end max-w-[55%]";
+
+actions.appendChild(toggleBtn);
+
+// bouton favoris
+const favBtn = document.createElement("button");
+favBtn.type = "button";
+favBtn.className =
+  "text-xs px-2 py-1 rounded-full border border-slate-500/60 bg-slate-900/60 hover:bg-slate-800/90 transition-fast";
+favBtn.textContent = incident.favorite ? "★" : "☆";
+favBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  incident.favorite = !incident.favorite;
+  saveIncidentsToStorage();
+  renderCards();
+});
+actions.appendChild(favBtn);
+
+// bouton Modifier
+const editBtn = document.createElement("button");
+editBtn.type = "button";
+editBtn.className =
+  "text-[0.7rem] px-2 py-1 rounded-full border border-sky-500/70 text-sky-200 bg-slate-900/60 hover:bg-slate-800/80 transition-fast";
+editBtn.textContent = "Modifier";
+editBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  startEditIncident(incident.id);
+});
+actions.appendChild(editBtn);
+
+// bouton Supprimer
+const deleteBtn = document.createElement("button");
+deleteBtn.type = "button";
+deleteBtn.className =
+  "text-[0.7rem] px-2 py-1 rounded-full border border-red-500/70 text-red-200 bg-slate-900/60 hover:bg-red-900/70 transition-fast";
+deleteBtn.textContent = "Supprimer";
+deleteBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  const ok = confirm("⚠️ Êtes-vous sûr de vouloir supprimer cette fiche ? Cette action est irréversible.");
+  if (!ok) return;
+  deleteIncidentById(incident.id);
+  saveIncidentsToStorage();
+  renderCards();
+  showToast("Fiche supprimée ✅", "success");
+});
+actions.appendChild(deleteBtn);
+
+// bouton Imprimer (fiche seule)
+const printBtn = document.createElement("button");
+printBtn.type = "button";
+printBtn.className =
+  "text-[0.7rem] px-2 py-1 rounded-full border border-slate-500/60 text-slate-200 bg-slate-900/60 hover:bg-slate-800/80 transition-fast";
+printBtn.textContent = "Imprimer";
+printBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  printSingleIncident(incident.id);
+});
+actions.appendChild(printBtn);
+
+header.appendChild(titleBox);
+header.appendChild(actions);
+
+
+
+    const problemEl = document.createElement("p");
+    problemEl.className = "text-xs text-slate-300";
+    problemEl.textContent = incident.problem;
+
+    // Image éventuelle
+    if (incident.image) {
+      const imgWrapper = document.createElement("div");
+      imgWrapper.className = "mt-2 rounded-xl overflow-hidden border border-slate-700/80";
+
+      const img = document.createElement("img");
+      img.src = incident.image;
+      img.alt = "Illustration de la panne";
+      img.className = "w-full h-32 object-cover";
+
+      imgWrapper.appendChild(img);
+      card.appendChild(imgWrapper);
+    }
+
+    // Tags éventuels
+    if (incident.tags && incident.tags.length > 0) {
+      const tagsRow = document.createElement("div");
+      tagsRow.className = "mt-1 flex flex-wrap gap-1";
+      incident.tags.forEach(tag => {
+        const span = document.createElement("span");
+        span.className =
+          "px-1.5 py-0.5 rounded-full bg-slate-800/80 text-[0.65rem] text-sky-200";
+        span.textContent = `#${tag}`;
+        tagsRow.appendChild(span);
+      });
+      card.appendChild(tagsRow);
+    }
+
+    const details = document.createElement("div");
+    details.className = "mt-2 space-y-2 text-xs text-slate-300 hidden";
+
+    const rootCauseEl = document.createElement("div");
+    rootCauseEl.innerHTML =
+      `<p class="text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5">Root Cause</p>` +
+      `<p class="text-xs text-slate-300">${incident.rootCause}</p>`;
+
+    const workaroundEl = document.createElement("div");
+    workaroundEl.innerHTML =
+      `<p class="text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5">Solution de contournement</p>` +
+      `<p class="text-xs text-slate-300">${incident.workaround}</p>`;
+
+    const solutionEl = document.createElement("div");
+    solutionEl.innerHTML =
+      `<p class="text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5">Solution définitive</p>` +
+      `<p class="text-xs text-slate-300">${incident.solution}</p>`;
+
+    const stepsEl = document.createElement("div");
+    const stepsTitle = document.createElement("p");
+    stepsTitle.className =
+      "text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5";
+    stepsTitle.textContent = "Fiche de dépannage (étapes)";
+    const stepsList = document.createElement("ol");
+    stepsList.className = "list-decimal list-inside space-y-0.5";
+    (incident.steps || []).forEach(step => {
+      const li = document.createElement("li");
+      li.textContent = step;
+      stepsList.appendChild(li);
+    });
+    stepsEl.appendChild(stepsTitle);
+    stepsEl.appendChild(stepsList);
+
+    details.appendChild(rootCauseEl);
+    details.appendChild(workaroundEl);
+    details.appendChild(solutionEl);
+    details.appendChild(stepsEl);
+
+    card.appendChild(header);
+    card.appendChild(problemEl);
+    card.appendChild(details);
+
+    // Toggle behaviour
+    toggleBtn.addEventListener("click", () => {
+      const isHidden = details.classList.contains("hidden");
+      if (isHidden) {
+        details.classList.remove("hidden");
+        card.classList.add("details-open");
+      } else {
+        details.classList.add("hidden");
+        card.classList.remove("details-open");
+      }
+    });
+
+    card.addEventListener("click", e => {
+      if (e.target.closest("button")) return;
+      toggleBtn.click();
+    });
+
+    cardsContainer.appendChild(card);
+  });
+}
+
+function fillFormWithIncident(incident) {
+  const form = document.getElementById("addIncidentForm");
+  form.querySelector('[name="title"]').value = incident.title || "";
+  form.querySelector('[name="category"]').value = incident.category || "";
+  form.querySelector('[name="level"]').value = incident.level || "";
+  if (form.querySelector('[name="author"]')) {
+    form.querySelector('[name="author"]').value = incident.author || "";
+  }
+  if (form.querySelector('[name="image"]')) {
+    form.querySelector('[name="image"]').value = incident.image || "";
+  }
+  if (form.querySelector('[name="tags"]')) {
+    form.querySelector('[name="tags"]').value = (incident.tags || []).join(", ");
+  }
+  form.querySelector('[name="problem"]').value = incident.problem || "";
+  form.querySelector('[name="rootCause"]').value = incident.rootCause || "";
+  form.querySelector('[name="workaround"]').value = incident.workaround || "";
+  form.querySelector('[name="solution"]').value = incident.solution || "";
+  form.querySelector('[name="steps"]').value = (incident.steps || []).join("\n");
+}
+
+function resetFormToCreateMode() {
+  const form = document.getElementById("addIncidentForm");
+  form.reset();
+  editingIncidentId = null;
+  const submitBtn = document.getElementById("submitIncidentBtn");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+  if (submitBtn) submitBtn.textContent = "Ajouter la fiche";
+  if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
+}
+
+function startEditIncident(id) {
+  const incident = getIncidentById(id);
+  if (!incident) return;
+  editingIncidentId = id;
+  fillFormWithIncident(incident);
+  const submitBtn = document.getElementById("submitIncidentBtn");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+  if (submitBtn) submitBtn.textContent = "💾 Enregistrer les modifications";
+  if (cancelEditBtn) cancelEditBtn.classList.remove("hidden");
+  document.getElementById("addIncidentForm")?.scrollIntoView({ behavior: "smooth" });
+}
+function printSingleIncident(id) {
+  const originalFavoritesOnly = state.favoritesOnly;
+  const originalSearch = state.search;
+  const originalCategory = state.category;
+  const originalLevel = state.level;
+
+  state.favoritesOnly = false;
+  state.search = "";
+  state.category = "ALL";
+  state.level = "ALL";
+
+  const target = incidents.find(inc => inc.id === id);
+  if (!target) return;
+
+  const backup = incidents.slice();
+  incidents.length = 0;
+  incidents.push(target);
+  renderCards();
+
+  window.print();
+
+  incidents.length = 0;
+  backup.forEach(i => incidents.push(i));
+  state.favoritesOnly = originalFavoritesOnly;
+  state.search = originalSearch;
+  state.category = originalCategory;
+  state.level = originalLevel;
+  renderCards();
+}
+
+document.getElementById("printAllBtn").addEventListener("click", () => {
+  window.print();
+});
+
+// -----------------------------
+// Recherche
+// -----------------------------
+document.getElementById("searchInput").addEventListener("input", e => {
+  state.search = e.target.value || "";
+  renderCards();
+});
+
+// -----------------------------
+// Formulaire d'ajout
+// -----------------------------
+document
+  .getElementById("addIncidentForm")
+  .addEventListener("submit", e => {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const tagsRaw = (formData.get("tags") || "").trim();
+    const now = new Date().toISOString();
+
+    const baseData = {
+      title: formData.get("title").trim(),
+      category: formData.get("category"),
+      level: formData.get("level"),
+      author: (formData.get("author") || "").trim() || null,
+      image: (formData.get("image") || "").trim() || null,
+      problem: formData.get("problem").trim(),
+      rootCause: formData.get("rootCause").trim(),
+      workaround: formData.get("workaround").trim(),
+      solution: formData.get("solution").trim(),
+      tags: tagsRaw
+        ? tagsRaw.split(",").map(s => s.trim()).filter(Boolean)
+        : [],
+      steps: formData
+        .get("steps")
+        .split("\n")
+        .map(s => s.trim())
+        .filter(Boolean)
+    };
+
+    if (editingIncidentId != null) {
+      const existing = getIncidentById(editingIncidentId);
+      if (existing) {
+        Object.assign(existing, baseData, {
+          createdAt: existing.createdAt || now,
+          updatedAt: now
+        });
+      }
+    } else {
+      const newIncident = {
+        id: nextId++,
+        favorite: false,
+        createdAt: now,
+        updatedAt: now,
+        ...baseData
+      };
+      incidents.unshift(newIncident);
+    }
+
+    saveIncidentsToStorage();
+    renderCards();
+    resetFormToCreateMode();
+	if (editingIncidentId != null) {
+  showToast("Fiche modifiée avec succès ✅", "success");
+} else {
+  showToast("Nouvelle fiche ajoutée ✅", "success");
+}
+
+  });
+
+document.getElementById("cancelEditBtn").addEventListener("click", () => {
+  resetFormToCreateMode();
+});
+
+
+
+// -----------------------------
+// Suggestion IA (interne + crochet externe)
+// -----------------------------
+document.getElementById("aiSuggestionBtn").addEventListener("click", async () => {
+  // 1) IA interne : on cherche d’abord dans le pool
+  const suggestion = suggestFromPool();
+
+  if (suggestion) {
+    const now = new Date().toISOString();
+    const newIncident = {
+      ...suggestion,
+      id: nextId++,
+      favorite: false,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    incidents.unshift(newIncident);
+    saveIncidentsToStorage();
+    renderCards();
+    showToast("Suggestion IA ajoutée depuis le pool interne ✅", "success");
+
+    const btn = document.getElementById("aiSuggestionBtn");
+    btn.classList.add("scale-95");
+    setTimeout(() => btn.classList.remove("scale-95"), 150);
+    return;
+  }
+
+  // 2) Si le pool ne retourne rien : IA externe (placeholder)
+  await handleExternalAISuggestion();
+});
+
+
+// -----------------------------
+// Export / Import JSON
+// -----------------------------
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(incidents, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "total-troubleshooting-incidents.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+function mergeImportedIncidents(imported) {
+  imported.forEach(newInc => {
+    // Critère d’unicité : le titre (tu peux ajouter l’image si tu veux)
+    const existingIndex = incidents.findIndex(
+      inc => inc.title === newInc.title
+      // || (inc.image && newInc.image && inc.image === newInc.image)
+    );
+
+    if (existingIndex === -1) {
+      // Nouveau : on ajoute avec un id unique
+      const maxId = incidents.reduce((max, i) => Math.max(max, i.id || 0), 0);
+      if (!newInc.id || newInc.id <= maxId) {
+        newInc.id = maxId + 1;
+      }
+      if (typeof newInc.favorite !== "boolean") {
+        newInc.favorite = false;
+      }
+      incidents.push(newInc);
+    } else {
+      // Doublon : on propose de remplacer
+      const ok = window.confirm(
+        `Une fiche avec le titre "${newInc.title}" existe déjà.\n\n` +
+        `Veux-tu la remplacer par celle du fichier importé ?`
+      );
+      if (ok) {
+        // On conserve l'id d’origine pour ne rien casser
+        const oldId = incidents[existingIndex].id;
+        const oldFavorite = incidents[existingIndex].favorite || false;
+
+        const merged = {
+          ...incidents[existingIndex],
+          ...newInc
+        };
+
+        merged.id = oldId;
+        if (typeof merged.favorite !== "boolean") {
+          merged.favorite = oldFavorite;
+        }
+
+        incidents[existingIndex] = merged;
+      }
+    }
+  });
+
+  nextId = incidents.reduce((max, i) => Math.max(max, i.id || 0), 0) + 1;
+  saveIncidentsToStorage();
+  renderCards();
+}
+
+document.getElementById("importInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data)) throw new Error("Le JSON doit être un tableau de fiches.");
+      mergeImportedIncidents(data);
+    } catch (err) {
+      alert("Fichier JSON invalide.");
+      console.error(err);
+    }
+  };
+  reader.readAsText(file, "utf-8");
+});
+
+// -----------------------------
+// Reset complet
+// -----------------------------
+document.getElementById("resetBtn").addEventListener("click", () => {
+  const ok = confirm("Tu confirmes la réinitialisation complète de la bibliothèque ?");
+  if (!ok) return;
+
+  incidents.length = 0;            // vide le tableau en place
+  nextId = 1;
+  localStorage.removeItem(STORAGE_KEY);
+  renderCards();
+});
+
+// -----------------------------
+// Initialisation
+// -----------------------------
+loadIncidentsFromStorage();
+renderFilters();
+renderCards();
+</script>
+
+</body>
+</html>
