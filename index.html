@@ -195,6 +195,10 @@
     class="px-3 py-2 rounded-xl glass text-xs font-semibold text-sky-100">
     Export JSON
   </button>
+  <button id="exportWithImagesBtn"
+    class="px-3 py-2 rounded-xl glass text-xs font-semibold text-amber-100 border border-amber-400/40">
+    Export JSON + images
+  </button>
   <label
     class="px-3 py-2 rounded-xl glass text-xs font-semibold text-pink-200 cursor-pointer">
     Import JSON
@@ -280,6 +284,83 @@
           Aucune fiche ne correspond aux filtres/recherches actuels.
         </p>
       </section>
+
+<div id="imageAiModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/70"></div>
+  <div class="relative w-full max-w-2xl glass rounded-2xl p-4 sm:p-5 border border-slate-600/60">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h3 class="text-base sm:text-lg font-semibold text-sky-100">Image manquante – suggestion IA</h3>
+        <p class="text-xs text-slate-400 mt-1">Copie le prompt dans ton générateur d’images. Tu peux aussi coller un data-URI base64 pour l’attacher à la fiche.</p>
+      </div>
+      <button id="closeImageAiModal" type="button" class="px-2 py-1 rounded-lg border border-slate-500/70 text-slate-200 hover:bg-slate-800/80 transition-fast">✕</button>
+    </div>
+
+    <div class="mt-4 grid grid-cols-1 gap-3">
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Prompt (à copier)</label>
+        <textarea id="imageAiPrompt" rows="6" class="w-full px-2.5 py-2 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 input-focus text-xs"></textarea>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button id="copyImageAiPrompt" type="button" class="px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-500/70 text-xs font-semibold text-slate-100 hover:bg-slate-800/80 transition-fast">📋 Copier le prompt</button>
+        </div>
+      </div>
+
+      <div class="mt-2 rounded-xl border border-slate-600/60 bg-slate-900/35 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-semibold text-slate-200">🧩 Générer un mock “screenshot” (Enterprise)</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Génère une fausse fenêtre réaliste (Windows/macOS/iOS/Android/Azure/Exchange/AD…) et l’attache directement à la fiche.</p>
+          </div>
+        </div>
+        <div class="mt-2 flex flex-col sm:flex-row gap-2">
+          <select id="mockTemplateSelect" class="w-full sm:w-auto px-2.5 py-2 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 input-focus text-xs">
+            <option value="auto">Auto (selon la catégorie)</option>
+            <option value="windows11_dialog">Windows 11 — Boîte de dialogue</option>
+            <option value="windows11_toast">Windows 11 — Notification toast</option>
+            <option value="windows_security_cred">Windows — Invite d’identifiants (Credential)</option>
+            <option value="windows_bsod">Windows — BSOD (écran bleu)</option>
+            <option value="macos_alert">macOS — Alerte système</option>
+            <option value="macos_keychain">macOS — Invite Trousseaux (Keychain)</option>
+            <option value="ios_alert">iOS — Alerte</option>
+            <option value="ios_settings_banner">iOS — Bannière Réglages</option>
+            <option value="android_dialog">Android — Dialog</option>
+            <option value="android_notification">Android — Notification</option>
+            <option value="browser_edge_error">Edge/Chrome — Page d’erreur</option>
+            <option value="teams_error">Teams — Erreur/connexion</option>
+            <option value="vpn_client_error">VPN (Cisco/Forti) — Erreur</option>
+            <option value="azure_portal_error">Azure Portal — Erreur</option>
+            <option value="entra_signin_error">Entra ID — Erreur de connexion</option>
+            <option value="exchange_outlook_error">Exchange/Outlook — Erreur</option>
+            <option value="active_directory_logon">AD — Échec d’ouverture de session</option>
+</select>
+          <button id="generateMockImageBtn" type="button" class="px-3 py-2 rounded-xl bg-gradient-to-r from-sky-400 to-emerald-400 text-slate-950 text-xs font-semibold hover:from-sky-300 hover:to-emerald-300 transition-fast">
+            🖼️ Générer & attacher
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-2">Astuce : si tu veux un rendu encore plus “vrai”, garde des messages courts (1–2 lignes) et mets le code erreur dans le titre.</p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Coller une image en base64 (data:image/...;base64,...)</label>
+
+        <div id="imageDropZone" class="mt-2 rounded-xl border border-dashed border-slate-500/70 bg-slate-900/40 p-4 text-center transition-fast hover:bg-slate-900/55">
+          <p class="text-xs text-slate-200 font-semibold">Glisse-dépose une image ici</p>
+          <p class="mt-1 text-[11px] text-slate-400">ou clique pour sélectionner un fichier (PNG/JPG/WebP). L’image sera automatiquement compressée et attachée à la fiche.</p>
+          <input id="imageFileInput" type="file" accept="image/*" class="hidden" />
+          <img id="imageDropPreview" class="hidden mt-3 w-full max-h-48 object-contain rounded-lg border border-slate-700/70" alt="Prévisualisation" />
+        </div>
+<textarea id="imageBase64Input" rows="3" class="w-full px-2.5 py-2 rounded-lg bg-slate-900/70 border border-slate-600/70 text-slate-100 input-focus text-xs" placeholder="data:image/png;base64,iVBORw0KGgoAAA..."></textarea>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button id="attachBase64ToIncident" type="button" class="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-pink-400 text-slate-950 text-xs font-semibold hover:from-amber-300 hover:to-pink-300 transition-fast">📎 Attacher à la fiche</button>
+          <button id="clearBase64Input" type="button" class="px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-500/70 text-xs font-semibold text-slate-100 hover:bg-slate-800/80 transition-fast">🧹 Vider</button>
+        </div>
+      </div>
+
+      <p id="imageAiModalContext" class="text-[11px] text-slate-400"></p>
+    </div>
+  </div>
+</div>
+
 <div id="toast"
      class="fixed top-4 right-4 z-50 px-3 py-2 rounded-lg text-xs sm:text-sm
             bg-emerald-600/90 text-white shadow-lg hidden">
@@ -547,6 +628,7 @@ const state = {
   favoritesOnly: false
 };
 let editingIncidentId = null;
+let filtersListenersBound = false;
 
 function getIncidentById(id) {
   return incidents.find(inc => inc.id === id);
@@ -593,44 +675,76 @@ function renderFilters() {
   categoryFilters.innerHTML = "";
   levelFilters.innerHTML = "";
 
+  // Catégories dynamiques = suggestions (categoryOptions) + catégories réellement présentes
+  const categorySet = new Set(categoryOptions);
+  incidents.forEach(inc => {
+    if (inc && typeof inc.category === "string" && inc.category.trim()) {
+      categorySet.add(inc.category.trim());
+    }
+  });
+  const allCategories = Array.from(categorySet).sort((a, b) =>
+    a.localeCompare(b, "fr", { sensitivity: "base" })
+  );
+
+  // Bouton "Toutes"
   const allCat = createPill("Toutes", "ALL", "category");
-  allCat.classList.add("pill-active");
+  if (state.category === "ALL") allCat.classList.add("pill-active");
   categoryFilters.appendChild(allCat);
 
-  categoryOptions.forEach(cat => {
-    categoryFilters.appendChild(createPill(cat, cat, "category"));
+  // Boutons catégories
+  allCategories.forEach(cat => {
+    const btn = createPill(cat, cat, "category");
+    if (state.category === cat) btn.classList.add("pill-active");
+    categoryFilters.appendChild(btn);
   });
 
+  // Mise à jour du datalist
+  const categoryList = document.getElementById("categoryList");
+  if (categoryList) {
+    categoryList.innerHTML = "";
+    allCategories.forEach(cat => {
+      const opt = document.createElement("option");
+      opt.value = cat;
+      categoryList.appendChild(opt);
+    });
+  }
+
+  // Bouton "Tous" niveaux
   const allLevel = createPill("Tous", "ALL", "level");
-  allLevel.classList.add("pill-active");
+  if (state.level === "ALL") allLevel.classList.add("pill-active");
   levelFilters.appendChild(allLevel);
 
+  // Boutons niveaux
   levelOptions.forEach(lvl => {
-    levelFilters.appendChild(createPill(lvl, lvl, "level"));
+    const btn = createPill(lvl, lvl, "level");
+    if (state.level === lvl) btn.classList.add("pill-active");
+    levelFilters.appendChild(btn);
   });
 
-// Bouton favoris seulement
-const favToggle = document.createElement("button");
-favToggle.type = "button";
-favToggle.className =
-  "mt-2 px-3 py-1 rounded-full text-xs font-semibold border border-slate-500/70 bg-slate-900/70 text-yellow-300 hover:bg-slate-800/80 transition-fast";
-favToggle.textContent = "⭐ Favoris seulement";
-
-// on applique la classe en fonction de l'état actuel
-if (state.favoritesOnly) {
-  favToggle.classList.add("pill-active");
-}
-
-favToggle.addEventListener("click", () => {
-  state.favoritesOnly = !state.favoritesOnly;
+  // Bouton "⭐ Favoris seulement" (idempotent)
+  let favToggle = document.getElementById("favoritesOnlyButton");
+  if (!favToggle) {
+    favToggle = document.createElement("button");
+    favToggle.id = "favoritesOnlyButton";
+    favToggle.type = "button";
+    favToggle.className =
+      "mt-2 px-3 py-1 rounded-full text-xs font-semibold border border-slate-500/70 bg-slate-900/70 text-yellow-300 hover:bg-slate-800/80 transition-fast";
+    favToggle.textContent = "⭐ Favoris seulement";
+    favToggle.addEventListener("click", () => {
+      state.favoritesOnly = !state.favoritesOnly;
+      favToggle.classList.toggle("pill-active", state.favoritesOnly);
+      renderCards();
+    });
+  }
   favToggle.classList.toggle("pill-active", state.favoritesOnly);
-  renderCards();
-});
-
   levelFilters.parentElement.appendChild(favToggle);
 
-  categoryFilters.addEventListener("click", onFilterClick);
-  levelFilters.addEventListener("click", onFilterClick);
+  // Listeners (bind une seule fois)
+  if (!filtersListenersBound) {
+    categoryFilters.addEventListener("click", onFilterClick);
+    levelFilters.addEventListener("click", onFilterClick);
+    filtersListenersBound = true;
+  }
 }
 
 function onFilterClick(e) {
@@ -730,6 +844,1072 @@ function suggestFromPool() {
 }
 
 // Crochet pour l’IA externe (à brancher plus tard sur un backend)
+
+// -----------------------------
+// Images : suggestion IA + attachement base64
+// -----------------------------
+let _imageAiTargetIncidentId = null;
+
+function buildImageSuggestionPrompt(incident) {
+  const title = incident?.title || "";
+  const category = incident?.category || "";
+  const problem = incident?.problem || "";
+  const tags = Array.isArray(incident?.tags) ? incident.tags.join(", ") : "";
+
+  // Objectif : une image "Enterprise KB" quasi indiscernable d’un vrai screenshot,
+  // MAIS il s’agit d’un mock recréé (pas une capture réelle), sans watermark, sans styles artistiques.
+  return (
+    "Ultra realistic UI mock screenshot for an enterprise IT knowledge base.\n" +
+    "Must look like an authentic system/application screenshot (NOT an illustration, NOT futuristic, NOT cartoon).\n" +
+    "Typography: Segoe UI (Windows), SF Pro (Apple), Roboto (Android) depending on the platform.\n" +
+    "No watermark, no fake AI art, no neon effects. Crisp readable text.\n" +
+    "16:9 (1280x720).\n\n" +
+    `Scenario title: ${title}\n` +
+    `Product / Environment: ${category}\n` +
+    (problem ? `Error description (use as the main dialog text): ${problem}\n` : "") +
+    (tags ? `Keywords: ${tags}\n` : "") +
+    "\nPlatform instruction (choose the most appropriate):\n" +
+    "- Windows 11 system dialog OR app dialog (Outlook/Teams/Edge)\n" +
+    "- macOS system alert\n" +
+    "- iOS alert\n" +
+    "- Android dialog\n" +
+    "- Azure Portal error pane\n" +
+    "- Exchange/Outlook error dialog\n" +
+    "- Active Directory logon failure dialog\n\n" +
+    "Layout rules:\n" +
+    "- Realistic window chrome, correct spacing, subtle shadow\n" +
+    "- Include an error/warning/info icon where appropriate\n" +
+    "- Buttons: OK / Cancel / Retry (choose logically)\n" +
+    "- Keep text short and plausible (1–3 lines).\n"
+  );
+}
+
+function openImageAiModal(incident) {
+  _imageAiTargetIncidentId = incident?.id ?? null;
+
+  const modal = document.getElementById("imageAiModal");
+  const promptEl = document.getElementById("imageAiPrompt");
+  const base64El = document.getElementById("imageBase64Input");
+  const ctxEl = document.getElementById("imageAiModalContext");
+
+  if (!modal || !promptEl || !base64El) return;
+
+  promptEl.value = buildImageSuggestionPrompt(incident);
+  base64El.value = "";
+
+  const imgVal = incident?.image ? String(incident.image) : "(aucune)";
+  ctxEl.textContent = `Fiche #${incident?.id} — ${incident?.title || ""} • image actuelle : ${imgVal}`;
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function closeImageAiModal() {
+  const modal = document.getElementById("imageAiModal");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+  _imageAiTargetIncidentId = null;
+}
+
+
+// -----------------------------
+// Enterprise UI Mock Generator (Canvas)
+// -----------------------------
+function _mkCanvas(w, h) {
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  // Default background (subtle)
+  ctx.fillStyle = "#eef2f7";
+  ctx.fillRect(0, 0, w, h);
+  return { c, ctx };
+}
+
+function _wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 6) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  let line = "";
+  let lines = 0;
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line.trim(), x, y);
+      line = words[n] + " ";
+      y += lineHeight;
+      lines++;
+      if (lines >= maxLines) return;
+    } else {
+      line = testLine;
+    }
+  }
+  if (lines < maxLines) ctx.fillText(line.trim(), x, y);
+}
+
+function generateEnterpriseMockImageDataUrl(template, incident) {
+  const title = incident?.title || "Erreur";
+  const problem = incident?.problem || "Une erreur est survenue.";
+  const category = incident?.category || "Système";
+
+  // Auto template selection (best-effort) based on category/title
+  if (!template || template === "auto") {
+    const c = String(category || "").toLowerCase();
+    const t = String(title || "").toLowerCase();
+    const p = String(problem || "").toLowerCase();
+    const hay = (c + " " + t + " " + p);
+
+    if (/(azure|entra|adfs|oauth|tenant|subscription|resource group|arm)/.test(hay)) template = "azure_portal_error";
+    else if (/(entra|azure ad|aad|signin|sign-in|mfa|conditional access)/.test(hay)) template = "entra_signin_error";
+    else if (/(exchange|outlook|mailbox|autodiscover|ost|pst|mapi)/.test(hay)) template = "exchange_outlook_error";
+    else if (/(teams)/.test(hay)) template = "teams_error";
+    else if (/(vpn|forti|cisco|anyconnect|pulse|globalprotect)/.test(hay)) template = "vpn_client_error";
+    else if (/(ios|iphone|ipad)/.test(hay)) template = "ios_alert";
+    else if (/(android)/.test(hay)) template = "android_dialog";
+    else if (/(mac|macos|os x)/.test(hay)) template = "macos_alert";
+    else if (/(edge|chrome|browser|http|ssl|certificate|hsts|dns|proxy)/.test(hay)) template = "browser_edge_error";
+    else if (/(active directory|ad |domain controller|kerberos|ntlm|gpo|logon|ou|dsa)/.test(hay)) template = "active_directory_logon";
+    else template = "windows11_dialog";
+  }
+
+  // 1280x720 = vrai format “screenshot”
+  const W = 1280, H = 720;
+
+  const { c, ctx } = _mkCanvas(W, H);
+
+  // Helpers
+  const shadow = () => {
+    ctx.shadowColor = "rgba(0,0,0,0.22)";
+    ctx.shadowBlur = 28;
+    ctx.shadowOffsetY = 14;
+  };
+  const noShadow = () => {
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.shadowOffsetX = 0;
+  };
+
+  const drawButton = (x, y, w, h, label, primary=false) => {
+    ctx.save();
+    ctx.fillStyle = primary ? "#0f6cbd" : "#f3f4f6";
+    ctx.strokeStyle = primary ? "#0f6cbd" : "#c9cdd3";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = primary ? "#fff" : "#111827";
+    ctx.font = "16px Segoe UI, Arial";
+    ctx.fillText(label, x + 16, y + 26);
+    ctx.restore();
+  };
+
+  // Some browsers don’t have roundRect
+  if (!ctx.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+      r = Math.min(r, w/2, h/2);
+      this.beginPath();
+      this.moveTo(x+r, y);
+      this.arcTo(x+w, y, x+w, y+h, r);
+      this.arcTo(x+w, y+h, x, y+h, r);
+      this.arcTo(x, y+h, x, y, r);
+      this.arcTo(x, y, x+w, y, r);
+      this.closePath();
+      return this;
+    };
+  }
+
+  // Template switch
+  switch (template) {
+    case "windows11_dialog": {
+      // Desktop background
+      ctx.fillStyle = "#e9eef6";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 2;
+
+      const x=260, y=170, w=760, h=380;
+      ctx.roundRect(x, y, w, h, 14);
+      ctx.fill(); ctx.stroke();
+      noShadow();
+
+      // Title bar
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(x, y, w, 54);
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.beginPath(); ctx.moveTo(x, y+54); ctx.lineTo(x+w, y+54); ctx.stroke();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "16px Segoe UI, Arial";
+      ctx.fillText(category || "Microsoft Windows", x+22, y+34);
+
+      // Close button
+      ctx.fillStyle = "#111827";
+      ctx.font = "20px Segoe UI, Arial";
+      ctx.fillText("✕", x+w-34, y+36);
+
+      // Icon
+      ctx.fillStyle = "#fbbf24"; // amber
+      ctx.beginPath(); ctx.arc(x+78, y+160, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#111827";
+      ctx.font = "28px Segoe UI, Arial";
+      ctx.fillText("!", x+70, y+170);
+
+      // Text
+      ctx.fillStyle = "#111827";
+      ctx.font = "20px Segoe UI, Arial";
+      _wrapText(ctx, problem, x+125, y+142, 560, 30, 6);
+
+      // Buttons
+      drawButton(x+w-240, y+h-78, 100, 40, "Annuler", false);
+      drawButton(x+w-126, y+h-78, 100, 40, "OK", true);
+
+      break;
+    }
+    case "windows11_toast": {
+      ctx.fillStyle = "#e9eef6";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=780, y=70, w=430, h=160;
+      ctx.roundRect(x, y, w, h, 14);
+      ctx.fill(); ctx.stroke();
+      noShadow();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "14px Segoe UI, Arial";
+      ctx.fillText(category || "Windows", x+18, y+34);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "16px Segoe UI, Arial";
+      _wrapText(ctx, title || "Notification", x+18, y+62, w-36, 22, 2);
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "14px Segoe UI, Arial";
+      _wrapText(ctx, problem, x+18, y+92, w-36, 20, 3);
+      break;
+    }
+    case "macos_alert": {
+      // macOS wallpaper blur impression
+      ctx.fillStyle = "#f1f5f9";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#f6f7f8";
+      ctx.strokeStyle = "#d1d5db";
+      ctx.lineWidth = 2;
+      const x=320, y=190, w=640, h=320;
+      ctx.roundRect(x, y, w, h, 18);
+      ctx.fill(); ctx.stroke();
+      noShadow();
+
+      // top row with traffic lights
+      ctx.fillStyle = "#e5e7eb";
+      ctx.fillRect(x, y, w, 46);
+      ctx.fillStyle = "#ef4444"; ctx.beginPath(); ctx.arc(x+24, y+23, 7, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#f59e0b"; ctx.beginPath(); ctx.arc(x+46, y+23, 7, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#22c55e"; ctx.beginPath(); ctx.arc(x+68, y+23, 7, 0, Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "18px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.fillText(title || "Alerte", x+24, y+90);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "16px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      _wrapText(ctx, problem, x+24, y+125, w-48, 24, 6);
+
+      // buttons
+      const bw=140, bh=40, gap=12;
+      ctx.fillStyle = "#e5e7eb";
+      ctx.roundRect(x+w-bw*2-gap-24, y+h-70, bw, bh, 10).fill();
+      ctx.roundRect(x+w-bw-24, y+h-70, bw, bh, 10).fill();
+      ctx.fillStyle = "#111827";
+      ctx.font = "15px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.fillText("Annuler", x+w-bw*2-gap-24+38, y+h-44);
+      ctx.fillText("OK", x+w-bw-24+58, y+h-44);
+
+      break;
+    }
+    case "ios_alert": {
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.strokeStyle = "rgba(229,231,235,0.9)";
+      const x=380, y=190, w=520, h=320;
+      ctx.roundRect(x, y, w, h, 24);
+      ctx.fill(); ctx.stroke();
+      noShadow();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "22px -apple-system, BlinkMacSystemFont, 'SF Pro Display', Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(title || "Alerte", x+w/2, y+78);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "18px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.textAlign = "center";
+      _wrapText(ctx, problem, x+w/2 - (w-80)/2, y+120, w-80, 26, 5);
+
+      // divider
+      ctx.strokeStyle = "rgba(209,213,219,0.9)";
+      ctx.beginPath(); ctx.moveTo(x, y+h-74); ctx.lineTo(x+w, y+h-74); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x+w/2, y+h-74); ctx.lineTo(x+w/2, y+h); ctx.stroke();
+
+      ctx.fillStyle = "#0f6cbd";
+      ctx.font = "20px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("OK", x+w*0.75, y+h-28);
+      ctx.fillStyle = "#111827";
+      ctx.fillText("Annuler", x+w*0.25, y+h-28);
+      ctx.textAlign = "start";
+      break;
+    }
+    case "android_dialog": {
+      ctx.fillStyle = "#eef2f7";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=420, y=190, w=440, h=320;
+      ctx.roundRect(x, y, w, h, 18);
+      ctx.fill(); ctx.stroke();
+      noShadow();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "20px Roboto, Arial";
+      ctx.fillText(title || "Erreur", x+24, y+64);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "16px Roboto, Arial";
+      _wrapText(ctx, problem, x+24, y+104, w-48, 24, 6);
+
+      ctx.fillStyle = "#0f766e";
+      ctx.font = "16px Roboto, Arial";
+      ctx.fillText("ANNULER", x+200, y+h-34);
+      ctx.fillText("OK", x+330, y+h-34);
+      break;
+    }
+    case "azure_portal_error": {
+      // Azure portal-ish frame
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillRect(0, 0, W, H);
+
+      // left nav
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(0, 0, 240, H);
+
+      // top bar
+      ctx.fillStyle = "#1f2937";
+      ctx.fillRect(240, 0, W-240, 56);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "18px Segoe UI, Arial";
+      ctx.fillText("Microsoft Azure", 270, 36);
+
+      // main content
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(260, 86, W-300, H-130);
+
+      // error banner
+      ctx.fillStyle = "#fee2e2";
+      ctx.fillRect(290, 120, W-360, 72);
+      ctx.fillStyle = "#b91c1c";
+      ctx.font = "16px Segoe UI, Arial";
+      ctx.fillText("Error", 312, 148);
+      ctx.fillStyle = "#7f1d1d";
+      ctx.font = "14px Segoe UI, Arial";
+      _wrapText(ctx, problem, 312, 172, W-420, 20, 2);
+
+      // details pane
+      ctx.fillStyle = "#111827";
+      ctx.font = "20px Segoe UI, Arial";
+      ctx.fillText(title || "Deployment failed", 290, 240);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "14px Segoe UI, Arial";
+      _wrapText(ctx, "Try again later, check permissions, and review activity logs.", 290, 270, W-360, 20, 4);
+      break;
+    }
+    case "exchange_outlook_error": {
+      ctx.fillStyle = "#e9eef6";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=250, y=170, w=780, h=380;
+      ctx.roundRect(x, y, w, h, 14);
+      ctx.fill(); ctx.stroke();
+      noShadow();
+
+      // Title bar
+      ctx.fillStyle = "#0f6cbd";
+      ctx.fillRect(x, y, w, 54);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "16px Segoe UI, Arial";
+      ctx.fillText("Microsoft Outlook", x+22, y+34);
+
+      // icon
+      ctx.fillStyle = "#38bdf8";
+      ctx.beginPath(); ctx.arc(x+78, y+160, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#0b1220";
+      ctx.font = "24px Segoe UI, Arial";
+      ctx.fillText("i", x+72, y+170);
+
+      // text
+      ctx.fillStyle = "#111827";
+      ctx.font = "20px Segoe UI, Arial";
+      _wrapText(ctx, problem, x+125, y+142, 580, 30, 6);
+
+      drawButton(x+w-126, y+h-78, 100, 40, "OK", true);
+      break;
+    }
+    case "active_directory_logon": {
+      ctx.fillStyle = "#0b1220";
+      ctx.fillRect(0, 0, W, H);
+
+      // Simple "Windows logon" box
+      shadow();
+      ctx.fillStyle = "#111827";
+      ctx.strokeStyle = "#334155";
+      const x=360, y=180, w=560, h=360;
+      ctx.roundRect(x, y, w, h, 16);
+      ctx.fill(); ctx.stroke();
+      noShadow();
+
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "20px Segoe UI, Arial";
+      ctx.fillText("Windows Security", x+26, y+60);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "14px Segoe UI, Arial";
+      _wrapText(ctx, "The user name or password is incorrect.", x+26, y+98, w-52, 20, 2);
+
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "16px Segoe UI, Arial";
+      ctx.fillText("User name:", x+26, y+160);
+      ctx.fillText("Password:", x+26, y+230);
+
+      // fields
+      ctx.fillStyle = "#0b1220";
+      ctx.strokeStyle = "#475569";
+      ctx.roundRect(x+26, y+172, w-52, 40, 8); ctx.fill(); ctx.stroke();
+      ctx.roundRect(x+26, y+242, w-52, 40, 8); ctx.fill(); ctx.stroke();
+
+      drawButton(x+w-240, y+h-70, 100, 40, "Cancel", false);
+      drawButton(x+w-126, y+h-70, 100, 40, "OK", true);
+
+      break;
+    }
+
+    case "windows_security_cred": {
+      ctx.fillStyle = "#e9eef6";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 2;
+      const x=300, y=170, w=680, h=380;
+      ctx.roundRect(x, y, w, h, 14); ctx.fill(); ctx.stroke();
+      noShadow();
+
+      // Title bar
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(x, y, w, 54);
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.beginPath(); ctx.moveTo(x, y+54); ctx.lineTo(x+w, y+54); ctx.stroke();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "16px Segoe UI, Arial";
+      ctx.fillText("Windows Security", x+22, y+34);
+
+      // Icon (lock)
+      ctx.fillStyle = "#60a5fa";
+      ctx.beginPath(); ctx.arc(x+70, y+150, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#0b1220";
+      ctx.font = "18px Segoe UI, Arial";
+      ctx.fillText("🔒", x+58, y+158);
+
+      // Text
+      ctx.fillStyle = "#111827";
+      ctx.font = "18px Segoe UI, Arial";
+      _wrapText(ctx, title, x+120, y+130, 520, 26, 2);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "14px Segoe UI, Arial";
+      _wrapText(ctx, problem, x+120, y+170, 520, 20, 3);
+
+      // Fields
+      ctx.fillStyle = "#111827";
+      ctx.font = "14px Segoe UI, Arial";
+      ctx.fillText("User name:", x+120, y+250);
+      ctx.fillText("Password:", x+120, y+320);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.roundRect(x+120, y+260, 520, 40, 8); ctx.fill(); ctx.stroke();
+      ctx.roundRect(x+120, y+330, 520, 40, 8); ctx.fill(); ctx.stroke();
+
+      // Buttons
+      drawButton(x+w-240, y+h-78, 100, 40, "Cancel", false);
+      drawButton(x+w-126, y+h-78, 100, 40, "OK", true);
+      break;
+    }
+
+    case "windows_bsod": {
+      // BSOD-like
+      ctx.fillStyle = "#0a65c2";
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "72px Segoe UI, Arial";
+      ctx.fillText(":(", 180, 200);
+
+      ctx.font = "28px Segoe UI, Arial";
+      _wrapText(ctx, "Your device ran into a problem and needs to restart.", 180, 260, 920, 38, 2);
+      ctx.font = "20px Segoe UI, Arial";
+      _wrapText(ctx, "We’re just collecting some error info, and then we’ll restart for you.", 180, 330, 920, 30, 2);
+
+      ctx.font = "18px Segoe UI, Arial";
+      ctx.fillText("If you call a support person, give them this info:", 180, 410);
+      ctx.font = "18px Segoe UI, Arial";
+      const stop = (title || "").slice(0, 40) || "STOP CODE: SYSTEM_SERVICE_EXCEPTION";
+      ctx.fillText(stop.toUpperCase(), 180, 450);
+
+      // Fake QR
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(980, 390, 110, 110);
+      ctx.fillStyle = "#0a65c2";
+      for (let i=0;i<11;i++){
+        for (let j=0;j<11;j++){
+          if ((i*j + i + j) % 3 === 0) ctx.fillRect(985+i*9, 395+j*9, 7, 7);
+        }
+      }
+      break;
+    }
+
+    case "macos_keychain": {
+      ctx.fillStyle = "#f1f5f9";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#f6f7f8";
+      ctx.strokeStyle = "#d1d5db";
+      ctx.lineWidth = 2;
+      const x=320, y=190, w=640, h=340;
+      ctx.roundRect(x, y, w, h, 18); ctx.fill(); ctx.stroke();
+      noShadow();
+
+      // traffic lights
+      ctx.fillStyle = "#e5e7eb";
+      ctx.fillRect(x, y, w, 46);
+      ctx.fillStyle = "#ef4444"; ctx.beginPath(); ctx.arc(x+24, y+23, 7, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#f59e0b"; ctx.beginPath(); ctx.arc(x+46, y+23, 7, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#22c55e"; ctx.beginPath(); ctx.arc(x+68, y+23, 7, 0, Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "18px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.fillText("Keychain Access", x+24, y+86);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "16px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      _wrapText(ctx, problem || "macOS wants to use your confidential information stored in “login” in your keychain.", x+24, y+125, w-48, 24, 5);
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "14px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.fillText("Password:", x+24, y+250);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.roundRect(x+24, y+262, w-48, 40, 10); ctx.fill(); ctx.stroke();
+
+      // buttons
+      ctx.fillStyle = "#e5e7eb";
+      ctx.roundRect(x+w-24-140-12-140, y+h-70, 140, 40, 10).fill();
+      ctx.roundRect(x+w-24-140, y+h-70, 140, 40, 10).fill();
+      ctx.fillStyle = "#111827";
+      ctx.font = "15px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.fillText("Cancel", x+w-24-140-12-140+46, y+h-44);
+      ctx.fillText("Allow", x+w-24-140+52, y+h-44);
+      break;
+    }
+
+    case "ios_settings_banner": {
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, W, H);
+
+      // phone frame
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=420, y=60, w=440, h=600;
+      ctx.roundRect(x, y, w, h, 36); ctx.fill(); ctx.stroke();
+      noShadow();
+
+      // top bar
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillRect(x, y, w, 90);
+      ctx.fillStyle = "#111827";
+      ctx.font = "20px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.fillText("Settings", x+24, y+58);
+
+      // banner
+      ctx.fillStyle = "#fee2e2";
+      ctx.fillRect(x+18, y+110, w-36, 76);
+      ctx.fillStyle = "#b91c1c";
+      ctx.font = "14px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      ctx.fillText("Apple ID / Account", x+30, y+140);
+      ctx.fillStyle = "#7f1d1d";
+      ctx.font = "13px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Arial";
+      _wrapText(ctx, problem, x+30, y+162, w-60, 18, 2);
+      break;
+    }
+
+    case "android_notification": {
+      ctx.fillStyle = "#eef2f7";
+      ctx.fillRect(0, 0, W, H);
+
+      // phone frame
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=420, y=60, w=440, h=600;
+      ctx.roundRect(x, y, w, h, 28); ctx.fill(); ctx.stroke();
+      noShadow();
+
+      // notification shade
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(x, y, w, 90);
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "16px Roboto, Arial";
+      ctx.fillText("Notifications", x+24, y+54);
+
+      // card
+      ctx.fillStyle = "#1f2937";
+      ctx.roundRect(x+18, y+110, w-36, 110, 16).fill();
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "14px Roboto, Arial";
+      ctx.fillText(category || "System", x+36, y+148);
+      ctx.font = "16px Roboto, Arial";
+      _wrapText(ctx, problem, x+36, y+176, w-72, 22, 3);
+      break;
+    }
+
+    case "browser_edge_error": {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, W, H);
+
+      // top browser bar
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillRect(0, 0, W, 72);
+      ctx.fillStyle = "#111827";
+      ctx.font = "16px Segoe UI, Arial";
+      ctx.fillText("https://", 120, 44);
+
+      // error content
+      ctx.fillStyle = "#111827";
+      ctx.font = "40px Segoe UI, Arial";
+      ctx.fillText("This site can’t be reached", 120, 170);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "18px Segoe UI, Arial";
+      _wrapText(ctx, problem || "The connection was reset.", 120, 220, 1000, 28, 3);
+
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "16px Segoe UI, Arial";
+      ctx.fillText("Try:", 120, 330);
+      ctx.fillText("• Checking the connection", 150, 360);
+      ctx.fillText("• Checking the proxy and the firewall", 150, 390);
+
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "14px Segoe UI, Arial";
+      const code = (title || "ERR_CONNECTION_RESET").toUpperCase();
+      ctx.fillText(code, 120, 460);
+      break;
+    }
+
+    case "teams_error": {
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillRect(0, 0, W, H);
+
+      // left rail
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(0, 0, 220, H);
+
+      // header
+      ctx.fillStyle = "#5b5fc7";
+      ctx.fillRect(220, 0, W-220, 56);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "18px Segoe UI, Arial";
+      ctx.fillText("Microsoft Teams", 250, 36);
+
+      // content card
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=320, y=150, w=820, h=420;
+      ctx.roundRect(x, y, w, h, 16); ctx.fill(); ctx.stroke();
+      noShadow();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "26px Segoe UI, Arial";
+      ctx.fillText(title || "Something went wrong", x+36, y+86);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "18px Segoe UI, Arial";
+      _wrapText(ctx, problem || "We couldn’t sign you in. Please try again.", x+36, y+126, w-72, 28, 5);
+
+      drawButton(x+w-156, y+h-76, 120, 40, "Retry", true);
+      break;
+    }
+
+    case "vpn_client_error": {
+      ctx.fillStyle = "#e9eef6";
+      ctx.fillRect(0, 0, W, H);
+
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=320, y=170, w=640, h=380;
+      ctx.roundRect(x, y, w, h, 14); ctx.fill(); ctx.stroke();
+      noShadow();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "18px Segoe UI, Arial";
+      ctx.fillText("VPN Client", x+22, y+48);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "16px Segoe UI, Arial";
+      _wrapText(ctx, problem || "Unable to establish VPN connection.", x+22, y+92, w-44, 24, 6);
+
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "14px Segoe UI, Arial";
+      _wrapText(ctx, "Check your network, credentials, and try again.", x+22, y+260, w-44, 20, 2);
+
+      drawButton(x+w-126, y+h-78, 100, 40, "OK", true);
+      break;
+    }
+
+    case "entra_signin_error": {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, W, H);
+
+      // Microsoft top
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, W, 84);
+      ctx.fillStyle = "#111827";
+      ctx.font = "22px Segoe UI, Arial";
+      ctx.fillText("Microsoft", 90, 52);
+
+      // content card
+      shadow();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#e5e7eb";
+      const x=340, y=150, w=600, h=420;
+      ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
+      noShadow();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "28px Segoe UI, Arial";
+      ctx.fillText("Sign-in error", x+40, y+92);
+
+      ctx.fillStyle = "#374151";
+      ctx.font = "16px Segoe UI, Arial";
+      _wrapText(ctx, problem || "We couldn’t sign you in. Please try again.", x+40, y+132, w-80, 24, 5);
+
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "14px Segoe UI, Arial";
+      ctx.fillText("Error code: AADSTS50020", x+40, y+270);
+      ctx.fillText("Correlation ID: 00000000-0000-0000-0000-000000000000", x+40, y+296);
+      ctx.fillText("Timestamp: " + new Date().toISOString().replace("T"," ").slice(0,19) + "Z", x+40, y+322);
+
+      drawButton(x+w-160, y+h-70, 120, 40, "Try again", true);
+      break;
+    }
+    default: {
+      // fallback: Windows dialog
+      return generateEnterpriseMockImageDataUrl("windows11_dialog", incident);
+    }
+  }
+
+
+  // Watermark to avoid confusion with real screenshots
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = "#111827";
+  ctx.font = "bold 20px Segoe UI, Arial";
+  ctx.translate(W - 210, H - 18);
+  ctx.rotate(-0.12);
+  ctx.fillText("ILLUSTRATION", 0, 0);
+  ctx.restore();
+
+  return c.toDataURL("image/png");
+}
+
+
+
+
+document.getElementById("closeImageAiModal")?.addEventListener("click", closeImageAiModal);
+document.getElementById("imageAiModal")?.addEventListener("click", (e) => {
+  // clic sur l'overlay = ferme
+  if (e.target?.id === "imageAiModal") closeImageAiModal();
+  if (e.target?.classList?.contains("absolute")) closeImageAiModal();
+});
+
+document.getElementById("copyImageAiPrompt")?.addEventListener("click", async () => {
+  const promptEl = document.getElementById("imageAiPrompt");
+  if (!promptEl) return;
+  try {
+    await navigator.clipboard.writeText(promptEl.value || "");
+    showToast("Prompt copié ✅", "success");
+  } catch {
+    showToast("Impossible de copier (clipboard bloqué).", "error");
+  }
+});
+
+document.getElementById("clearBase64Input")?.addEventListener("click", () => {
+  const base64El = document.getElementById("imageBase64Input");
+  if (base64El) base64El.value = "";
+});
+
+// -----------------------------
+// Drag & drop image -> conversion automatique (base64) + compression + attachement
+// -----------------------------
+async function fileToCompressedDataURL(file, opts = {}) {
+  const {
+    maxWidth = 1280,
+    maxHeight = 720,
+    mime = "image/webp",
+    quality = 0.86
+  } = opts;
+
+  // Sécurité basique
+  if (!file || !file.type || !file.type.startsWith("image/")) {
+    throw new Error("Fichier non image.");
+  }
+
+  // Crée un bitmap (plus fiable que new Image() sur certains navigateurs)
+  let bitmap;
+  if (window.createImageBitmap) {
+    bitmap = await createImageBitmap(file);
+  } else {
+    // Fallback (anciens navigateurs)
+    const dataUrl = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+    bitmap = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  // Calcul du resize (conserve ratio)
+  let width = bitmap.width;
+  let height = bitmap.height;
+  const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+  const targetW = Math.max(1, Math.round(width * ratio));
+  const targetH = Math.max(1, Math.round(height * ratio));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetW;
+  canvas.height = targetH;
+
+  const ctx = canvas.getContext("2d", { alpha: true });
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.clearRect(0, 0, targetW, targetH);
+  ctx.drawImage(bitmap, 0, 0, targetW, targetH);
+
+  // webp support check -> fallback PNG
+  const outMime = (mime === "image/webp" && !canvas.toDataURL("image/webp").startsWith("data:image/webp"))
+    ? "image/png"
+    : mime;
+
+  const dataUrl = canvas.toDataURL(outMime, quality);
+  return dataUrl;
+}
+
+function setImagePreview(dataUrl) {
+  const prev = document.getElementById("imageDropPreview");
+  if (!prev) return;
+  prev.src = dataUrl;
+  prev.classList.remove("hidden");
+}
+
+function attachDataUrlToTargetIncident(dataUrl) {
+  if (!dataUrl || typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
+    showToast("Image invalide (data:image/...).", "error");
+    return false;
+  }
+
+  const inc = getIncidentById(_imageAiTargetIncidentId);
+  if (!inc) {
+    showToast("Ouvre d’abord la suggestion IA depuis une fiche.", "error");
+    return false;
+  }
+
+  inc.image = dataUrl;
+  inc.updatedAt = new Date().toISOString();
+  saveIncidentsToStorage();
+  renderCards();
+  showToast("Image attachée ✅", "success");
+  return true;
+}
+
+function bindDragDropImageZone() {
+  const dz = document.getElementById("imageDropZone");
+  const fi = document.getElementById("imageFileInput");
+  const base64El = document.getElementById("imageBase64Input");
+  if (!dz || !fi) return;
+
+  const highlight = (on) => {
+    dz.classList.toggle("border-sky-400/80", !!on);
+    dz.classList.toggle("bg-slate-900/55", !!on);
+  };
+
+  dz.addEventListener("click", () => fi.click());
+
+  dz.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    highlight(true);
+  });
+  dz.addEventListener("dragleave", () => highlight(false));
+  dz.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    highlight(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+
+    try {
+      showToast("Conversion de l’image…", "info");
+      const dataUrl = await fileToCompressedDataURL(file, {
+        maxWidth: 1280,
+        maxHeight: 720,
+        mime: "image/webp",
+        quality: 0.86
+      });
+
+      if (base64El) base64El.value = dataUrl;
+      setImagePreview(dataUrl);
+
+      // Attache automatiquement (ultra propre)
+      const ok = attachDataUrlToTargetIncident(dataUrl);
+      if (ok) closeImageAiModal();
+    } catch (err) {
+      console.error(err);
+      showToast("Impossible de traiter l’image.", "error");
+    }
+  });
+
+  fi.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      showToast("Conversion de l’image…", "info");
+      const dataUrl = await fileToCompressedDataURL(file, {
+        maxWidth: 1280,
+        maxHeight: 720,
+        mime: "image/webp",
+        quality: 0.86
+      });
+
+      if (base64El) base64El.value = dataUrl;
+      setImagePreview(dataUrl);
+
+      const ok = attachDataUrlToTargetIncident(dataUrl);
+      if (ok) closeImageAiModal();
+    } catch (err) {
+      console.error(err);
+      showToast("Impossible de traiter l’image.", "error");
+    } finally {
+      // permet de re-sélectionner le même fichier
+      e.target.value = "";
+    }
+  });
+}
+bindDragDropImageZone();
+
+
+document.getElementById("generateMockImageBtn")?.addEventListener("click", () => {
+  const templateSel = document.getElementById("mockTemplateSelect");
+  const template = (templateSel?.value || "windows11_dialog").trim();
+  if (!_imageAiTargetIncidentId) {
+    showToast("Aucune fiche ciblée.", "error");
+    return;
+  }
+  const incident = incidents.find(i => String(i.id) === String(_imageAiTargetIncidentId));
+  if (!incident) {
+    showToast("Fiche introuvable.", "error");
+    return;
+  }
+
+  try {
+    const dataUrl = generateEnterpriseMockImageDataUrl(template, incident);
+    // preview + textarea
+    const base64El = document.getElementById("imageBase64Input");
+    const preview = document.getElementById("imageDropPreview");
+    if (base64El) base64El.value = dataUrl;
+
+    if (preview) {
+      preview.src = dataUrl;
+      preview.classList.remove("hidden");
+    }
+
+    // attach immediately
+    incident.image = dataUrl;
+    incident.updatedAt = new Date().toISOString();
+    saveIncidentsToStorage();
+    renderCards();
+
+    showToast("Mock screenshot attaché ✅", "success");
+    closeImageAiModal();
+  } catch (e) {
+    console.error(e);
+    showToast("Échec génération mock screenshot.", "error");
+  }
+});
+
+document.getElementById("attachBase64ToIncident")?.addEventListener("click", () => {
+  const base64El = document.getElementById("imageBase64Input");
+  const val = (base64El?.value || "").trim();
+  if (!val) {
+    showToast("Colle un data-URI base64 d’abord.", "error");
+    return;
+  }
+  if (!val.startsWith("data:image/") || !val.includes(";base64,")) {
+    showToast("Format attendu : data:image/...;base64,...", "error");
+    return;
+  }
+
+  const inc = getIncidentById(_imageAiTargetIncidentId);
+  if (!inc) {
+    showToast("Fiche introuvable.", "error");
+    return;
+  }
+
+  inc.image = val;
+  inc.updatedAt = new Date().toISOString();
+  saveIncidentsToStorage();
+  renderCards();
+  showToast("Image attachée ✅", "success");
+  closeImageAiModal();
+});
+
 async function handleExternalAISuggestion() {
   const term = state.search || "";
   if (!term) {
@@ -791,7 +1971,13 @@ const lvlSpan = document.createElement("span");
 lvlSpan.className =
   "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.65rem] uppercase tracking-wide " +
   getLevelBadgeClass(incident.level);
-lvlSpan.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900/80"></span><span>${incident.level}</span>`;
+lvlSpan.innerHTML = "";
+const lvlDot = document.createElement("span");
+lvlDot.className = "w-1.5 h-1.5 rounded-full bg-slate-900/80";
+const lvlTxt = document.createElement("span");
+lvlTxt.textContent = incident.level;
+lvlSpan.appendChild(lvlDot);
+lvlSpan.appendChild(lvlTxt);
 
 metaRow.appendChild(catSpan);
 metaRow.appendChild(lvlSpan);
@@ -831,6 +2017,15 @@ toggleBtn.className =
 toggleBtn.innerHTML =
   '<span class="mr-1 rotate-icon">▶</span><span>Détails</span>';
 
+// Accessibilité : état + clavier
+toggleBtn.setAttribute("aria-expanded", "false");
+toggleBtn.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    toggleBtn.click();
+  }
+});
+
 // actions à droite
 const actions = document.createElement("div");
 actions.className =
@@ -848,6 +2043,7 @@ favBtn.addEventListener("click", e => {
   e.stopPropagation();
   incident.favorite = !incident.favorite;
   saveIncidentsToStorage();
+  renderFilters();
   renderCards();
 });
 actions.appendChild(favBtn);
@@ -912,7 +2108,44 @@ header.appendChild(actions);
       img.alt = "Illustration de la panne";
       img.className = "w-full h-32 object-cover";
 
+      // Si l'image ne charge pas, on propose une suggestion IA (sans casser la carte)
+      img.onerror = () => {
+        imgWrapper.innerHTML = "";
+        imgWrapper.className = "mt-2 rounded-xl border border-slate-700/80 p-3 bg-slate-900/40";
+        const msg = document.createElement("p");
+        msg.className = "text-[11px] text-slate-400";
+        msg.textContent = "Image introuvable. Génère/attache une image via suggestion IA.";
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mt-2 px-3 py-2 rounded-xl glass text-xs font-semibold text-amber-100 border border-amber-400/40 hover:bg-slate-800/80 transition-fast";
+        btn.textContent = "✨ Proposer une image IA";
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openImageAiModal(incident);
+        });
+        imgWrapper.appendChild(msg);
+        imgWrapper.appendChild(btn);
+      };
+
       imgWrapper.appendChild(img);
+      card.appendChild(imgWrapper);
+    } else {
+      // Pas d'image : proposer directement
+      const imgWrapper = document.createElement("div");
+      imgWrapper.className = "mt-2 rounded-xl border border-slate-700/80 p-3 bg-slate-900/40";
+      const msg = document.createElement("p");
+      msg.className = "text-[11px] text-slate-400";
+      msg.textContent = "Aucune image. Génère/attache une image via suggestion IA.";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mt-2 px-3 py-2 rounded-xl glass text-xs font-semibold text-amber-100 border border-amber-400/40 hover:bg-slate-800/80 transition-fast";
+      btn.textContent = "✨ Proposer une image IA";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openImageAiModal(incident);
+      });
+      imgWrapper.appendChild(msg);
+      imgWrapper.appendChild(btn);
       card.appendChild(imgWrapper);
     }
 
@@ -934,19 +2167,40 @@ header.appendChild(actions);
     details.className = "mt-2 space-y-2 text-xs text-slate-300 hidden";
 
     const rootCauseEl = document.createElement("div");
-    rootCauseEl.innerHTML =
-      `<p class="text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5">Root Cause</p>` +
-      `<p class="text-xs text-slate-300">${incident.rootCause}</p>`;
+    {
+      const t = document.createElement("p");
+      t.className = "text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5";
+      t.textContent = "Root Cause";
+      const p = document.createElement("p");
+      p.className = "text-xs text-slate-300";
+      p.textContent = incident.rootCause || "";
+      rootCauseEl.appendChild(t);
+      rootCauseEl.appendChild(p);
+    }
 
     const workaroundEl = document.createElement("div");
-    workaroundEl.innerHTML =
-      `<p class="text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5">Solution de contournement</p>` +
-      `<p class="text-xs text-slate-300">${incident.workaround}</p>`;
+    {
+      const t = document.createElement("p");
+      t.className = "text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5";
+      t.textContent = "Solution de contournement";
+      const p = document.createElement("p");
+      p.className = "text-xs text-slate-300";
+      p.textContent = incident.workaround || "";
+      workaroundEl.appendChild(t);
+      workaroundEl.appendChild(p);
+    }
 
     const solutionEl = document.createElement("div");
-    solutionEl.innerHTML =
-      `<p class="text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5">Solution définitive</p>` +
-      `<p class="text-xs text-slate-300">${incident.solution}</p>`;
+    {
+      const t = document.createElement("p");
+      t.className = "text-[0.7rem] font-semibold text-slate-400 uppercase mb-0.5";
+      t.textContent = "Solution définitive";
+      const p = document.createElement("p");
+      p.className = "text-xs text-slate-300";
+      p.textContent = incident.solution || "";
+      solutionEl.appendChild(t);
+      solutionEl.appendChild(p);
+    }
 
     const stepsEl = document.createElement("div");
     const stepsTitle = document.createElement("p");
@@ -978,9 +2232,11 @@ header.appendChild(actions);
       if (isHidden) {
         details.classList.remove("hidden");
         card.classList.add("details-open");
+        toggleBtn.setAttribute("aria-expanded", "true");
       } else {
         details.classList.add("hidden");
         card.classList.remove("details-open");
+        toggleBtn.setAttribute("aria-expanded", "false");
       }
     });
 
@@ -1054,6 +2310,15 @@ function printSingleIncident(id) {
   incidents.push(target);
   renderCards();
 
+  // S'assure que les détails sont visibles pour l'impression
+  document.querySelectorAll("#cardsContainer article").forEach(card => {
+    const details = card.querySelector("div.mt-2.space-y-2.text-xs.text-slate-300");
+    if (details) details.classList.remove("hidden");
+    card.classList.add("details-open");
+    const btn = card.querySelector('button[aria-expanded]');
+    if (btn) btn.setAttribute("aria-expanded", "true");
+  });
+
   window.print();
 
   incidents.length = 0;
@@ -1066,6 +2331,34 @@ function printSingleIncident(id) {
 }
 
 document.getElementById("printAllBtn").addEventListener("click", () => {
+  // Ouvrir tous les détails avant impression
+  const openedIds = [];
+  document.querySelectorAll("#cardsContainer article").forEach(card => {
+    const details = card.querySelector("div.mt-2.space-y-2.text-xs.text-slate-300");
+    if (!details) return;
+    if (details.classList.contains("hidden")) {
+      details.classList.remove("hidden");
+      card.classList.add("details-open");
+      openedIds.push(card.dataset.id);
+      const btn = card.querySelector('button[aria-expanded]');
+      if (btn) btn.setAttribute("aria-expanded", "true");
+    }
+  });
+
+  const restore = () => {
+    document.querySelectorAll("#cardsContainer article").forEach(card => {
+      if (!openedIds.includes(card.dataset.id)) return;
+      const details = card.querySelector("div.mt-2.space-y-2.text-xs.text-slate-300");
+      if (!details) return;
+      details.classList.add("hidden");
+      card.classList.remove("details-open");
+      const btn = card.querySelector('button[aria-expanded]');
+      if (btn) btn.setAttribute("aria-expanded", "false");
+    });
+    window.removeEventListener("afterprint", restore);
+  };
+
+  window.addEventListener("afterprint", restore);
   window.print();
 });
 
@@ -1130,6 +2423,7 @@ document
     }
 
     saveIncidentsToStorage();
+    renderFilters();
     renderCards();
     resetFormToCreateMode();
 	if (editingIncidentId != null) {
@@ -1184,6 +2478,34 @@ document.getElementById("aiSuggestionBtn").addEventListener("click", async () =>
 // -----------------------------
 document.getElementById("exportBtn").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(incidents, null, 2)], { type: "application/json" });
+
+document.getElementById("exportWithImagesBtn").addEventListener("click", () => {
+  // Export avec images embarquées si possible.
+  // Si l'image est déjà un data-URI => ok.
+  // Si l'image est un chemin/URL => on exporte tel quel (sans téléchargement réseau).
+  const payload = incidents.map(inc => {
+    const copy = { ...inc };
+    // Marqueur utile
+    copy.imageEmbedded = typeof copy.image === "string" && copy.image.startsWith("data:image/");
+    if (!copy.imageEmbedded) {
+      // on propose un prompt si image manquante
+      if (!copy.image) {
+        copy.imageSuggestionPrompt = buildImageSuggestionPrompt(copy);
+      }
+    }
+    return copy;
+  });
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "total-troubleshooting-incidents_with_images.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Export (avec images) généré ✅", "success");
+});
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -1238,23 +2560,100 @@ function mergeImportedIncidents(imported) {
 
   nextId = incidents.reduce((max, i) => Math.max(max, i.id || 0), 0) + 1;
   saveIncidentsToStorage();
+  renderFilters();
   renderCards();
 }
 
 document.getElementById("importInput").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const data = JSON.parse(reader.result);
-      if (!Array.isArray(data)) throw new Error("Le JSON doit être un tableau de fiches.");
-      mergeImportedIncidents(data);
+      const raw = JSON.parse(reader.result);
+      if (!Array.isArray(raw)) {
+        console.error("Import JSON : racine non-array", raw);
+        showToast("Le fichier JSON doit contenir un tableau de fiches.", "error");
+        return;
+      }
+
+      const required = [
+        "title",
+        "category",
+        "level",
+        "problem",
+        "rootCause",
+        "workaround",
+        "solution"
+      ];
+
+      const normalized = raw
+        .map(item => {
+          if (!item || typeof item !== "object") return null;
+
+          for (const key of required) {
+            if (!item[key] || typeof item[key] !== "string") {
+              console.error("Fiche invalide (champ manquant) :", key, item);
+              return null;
+            }
+          }
+
+          // normalisation steps
+          if (typeof item.steps === "string") {
+            item.steps = item.steps
+              .split(/\r?\n/)
+              .map(s => s.trim())
+              .filter(Boolean);
+          } else if (Array.isArray(item.steps)) {
+            item.steps = item.steps
+              .map(s => (typeof s === "string" ? s.trim() : ""))
+              .filter(Boolean);
+          } else {
+            item.steps = [];
+          }
+
+          // normalisation tags (si string => CSV)
+          if (typeof item.tags === "string") {
+            item.tags = item.tags
+              .split(",")
+              .map(s => s.trim())
+              .filter(Boolean);
+          } else if (!Array.isArray(item.tags)) {
+            item.tags = [];
+          }
+
+          // trims (sans changer le contenu)
+          item.title = item.title.trim();
+          item.category = item.category.trim();
+          item.level = item.level.trim();
+          item.problem = item.problem.trim();
+          item.rootCause = item.rootCause.trim();
+          item.workaround = item.workaround.trim();
+          item.solution = item.solution.trim();
+
+          return item;
+        })
+        .filter(Boolean);
+
+      if (!normalized.length) {
+        showToast("Aucune fiche valide à importer.", "error");
+        return;
+      }
+
+      mergeImportedIncidents(normalized);
+      // Met à jour filtres + datalist (catégories dynamiques)
+      renderFilters();
+      showToast(`Import réussi : ${normalized.length} fiche(s).`, "success");
     } catch (err) {
-      alert("Fichier JSON invalide.");
-      console.error(err);
+      console.error("Erreur lors de l'import JSON :", err);
+      showToast("Erreur lors de la lecture du fichier JSON.", "error");
+    } finally {
+      // permet de réimporter le même fichier
+      e.target.value = "";
     }
   };
+
   reader.readAsText(file, "utf-8");
 });
 
